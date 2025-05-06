@@ -7,7 +7,7 @@ import os
 # 配置路径
 base_img_path = "new/codetest/3.jpg"  # 基准图片路径
 input_folder = "new/all"  # 已处理图片目录
-output_folder = "new/output"  # 输出目录
+output_folder = "new/output2"  # 输出目录
 
 # 初始化dlib组件
 detector = dlib.get_frontal_face_detector()
@@ -45,19 +45,25 @@ def align_image_with_rotation(img, landmarks):
     rotated_landmarks = np.dot(M, landmarks_homogeneous.T).T
     
     # 裁剪图像为正方形并缩放到353x353像素
-    points = [27, 30, 8, 45, 36, 48, 54]  # 鼻尖、下巴、左右眼尾、嘴角
+    # 添加眉毛的关键点(17, 19, 21为左眉毛, 22, 24, 26为右眉毛)
+    points = [27, 30, 8, 45, 36, 48, 54, 17, 19, 21, 22, 24, 26]  # 添加眉毛点
     selected_points = rotated_landmarks[points]
     x_min, y_min = np.min(selected_points, axis=0)
     x_max, y_max = np.max(selected_points, axis=0)
     width = x_max - x_min
     height = y_max - y_min
     max_side = max(width, height)
+    
+    # 稍微扩大一点裁剪区域，确保眉毛上方有足够空间
     center_x = (x_min + x_max) // 2
     center_y = (y_min + y_max) // 2
-    x_min = max(0, center_x - max_side // 2)
-    y_min = max(0, center_y - max_side // 2)
-    x_max = min(rotated_img.shape[1], center_x + max_side // 2)
-    y_max = min(rotated_img.shape[0], center_y + max_side // 2)
+    margin = int(max_side * 0.1)  # 添加10%的边距
+    max_side_with_margin = max_side + 2 * margin
+    
+    x_min = max(0, center_x - max_side_with_margin // 2)
+    y_min = max(0, center_y - max_side_with_margin // 2)
+    x_max = min(rotated_img.shape[1], center_x + max_side_with_margin // 2)
+    y_max = min(rotated_img.shape[0], center_y + max_side_with_margin // 2)
     cropped_img = rotated_img[int(y_min):int(y_max), int(x_min):int(x_max)]
     resized_img = cv2.resize(cropped_img, (353, 353), interpolation=cv2.INTER_LINEAR)
     return resized_img
