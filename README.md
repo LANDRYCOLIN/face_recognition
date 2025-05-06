@@ -109,3 +109,5 @@ face_recognition_UI
 2. 配准处理需要下载dlib人脸关键点模型文件
 3. 人脸识别UI目前为实验平台，核心识别算法需要进一步完善
 4. 处理大量图片时，请确保有足够的磁盘空间和内存
+
+git push origin main
